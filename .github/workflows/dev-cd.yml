@@ -1,0 +1,32 @@
+name: DevCD
+run-name: Dev deployment of '${{ github.ref_name }}'
+
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+    branches: [feature/**]
+
+jobs:
+  deploy-front-to-test:
+    name: Deploy frontend to test
+    runs-on: ubuntu-latest
+    environment: DEV
+
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: front
+          path: ./artifacts/front
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ github.event.workflow_run.id }}
+    
+      - name: Sync files
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.SERVER_ADDRESS }}
+          username: ${{ secrets.USER_NAME }}
+          password: ${{ secrets.PASSWORD }}
+          local-dir: ./artifacts/front/
+          server-dir: ${{ secrets.DEPLOYMENT_PATH }}
