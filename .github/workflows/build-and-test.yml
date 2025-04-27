@@ -1,0 +1,34 @@
+name: Build and Test
+run-name: Build and test for '${{ github.event_name}}' run on '${{ github.ref_name }}'
+
+on:
+  pull_request:
+    branches: [master, develop]
+  workflow_dispatch:
+
+jobs:
+  build-and-test-front:
+    name: Build and test code front-end
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ./front
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+
+      - name: Install NPM packages
+        run: npm ci
+
+      - name: Build code
+        run: npm run build
+
+      - name: Test code
+        run: npm run test
