@@ -1,4 +1,4 @@
-import './App.css';
+import './app.css';
 import multi_ninja from './assets/multi-ninja.png';
 import React from 'react';
 import { NavLink } from 'react-router';
