@@ -1,8 +1,11 @@
-import './app.css';
-import multi_ninja from './assets/multi-ninja.png';
+import './app.scss';
 import React from 'react';
 import { NavLink } from 'react-router';
 
 export default function AppComponent() {
-  return <div className="home-page">Przeglądarka historii polskiego sejmu</div>;
+  return (
+    <div className="home-page">
+      <NavLink to={`/terms`}>Wybierz kadencję</NavLink>
+    </div>
+  );
 }

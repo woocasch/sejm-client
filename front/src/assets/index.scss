@@ -1,16 +1,30 @@
+@use 'sass:color';
+@import './variables.scss';
+
 .root_container {
-  font-family: 'Nunito', 'Quicksand', sans-serif;
-  .menu {
-    text-align: center;
-    line-height: 3;
-  }
+    font-family: 'Nunito', 'Quicksand', sans-serif;
+    background-color: $background-color;
+    border-radius: 15px;
+    width: 90%;
+    margin: auto;
+    > .menu {
+        text-align: center;
+        line-height: 3;
+        background-color: color.scale($background-color, $saturation: -50%);
+        border-top-left-radius: 15px;
+        border-top-right-radius: 15px;
+    }
 
-  > div:nth-child(2) {
-    padding: 2px;
-  }
+    > .content {
+        margin: auto;
+        padding: 1em;
+    }
 
-  .footer {
-    text-align: center;
-    line-height: 3;
-  }
+    > .footer {
+        text-align: center;
+        line-height: 3;
+        background-color: color.scale($background-color, $saturation: -50%);
+        border-bottom-left-radius: 15px;
+        border-bottom-right-radius: 15px;
+    }
 }

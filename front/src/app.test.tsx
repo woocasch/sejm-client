@@ -5,8 +5,6 @@ import AppComponent from './app';
 
 describe('AppComponent', () => {
   it('should be rendered', () => {
-    render(
-      <AppComponent />,
-    );
+    render(<AppComponent />);
   });
 });

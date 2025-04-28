@@ -4,11 +4,16 @@ import AppComponent from './app';
 import './assets/reset.scss';
 import './assets/index.scss';
 import { createBrowserRouter, RouterProvider } from 'react-router';
+import TermsComponent from './terms/terms';
 
 const router = createBrowserRouter([
   {
     path: '/',
     Component: AppComponent,
+  },
+  {
+    path: '/terms',
+    Component: TermsComponent,
   },
 ]);
 
@@ -20,7 +25,9 @@ root.render(
     <div className="menu">
       <a href="/">Start</a>
     </div>
-    <RouterProvider router={router} />
+    <div className="content">
+      <RouterProvider router={router} />
+    </div>
     <div className="footer">© Łukasz Nowakowski</div>
   </div>,
 );

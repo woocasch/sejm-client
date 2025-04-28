@@ -1,0 +1,39 @@
+@use 'sass:color';
+@import '../assets/variables.scss';
+
+.term-info {
+    display: grid;
+    grid-template-columns: 1fr repeat(2, 2fr);
+    border-radius: 5px;
+    border: solid black 1px;
+    padding: 0.5em;
+    background-color: color.scale(
+        $background-color,
+        $saturation: -25%,
+        $lightness: -40%
+    );
+    color: color.scale($background-color, $saturation: 25%, $lightness: 40%);
+    &:hover {
+        background-color: yellow;
+    }
+
+    > * {
+        text-align: center;
+    }
+
+    .number {
+        font-weight: bold;
+        grid-column-start: 1;
+        grid-column-end: 2;
+    }
+
+    .range {
+        grid-column-start: 2;
+        grid-column-end: 4;
+        .from::after {
+            content: '-';
+            padding-right: 1em;
+            padding-left: 1em;
+        }
+    }
+}
