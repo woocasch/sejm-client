@@ -42,7 +42,7 @@ export class DataService implements IDataService {
           });
         });
       }
-      
+
       request.resultCallback(output);
     });
   }

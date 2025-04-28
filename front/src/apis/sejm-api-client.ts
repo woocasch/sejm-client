@@ -1,5 +1,4 @@
-export interface GetTermsRequest {
-}
+export interface GetTermsRequest {}
 
 export interface TermPrintsData {
   count?: number;
@@ -27,7 +26,7 @@ export class SejmApiClient implements ISejmApiClient {
   GetTerms(request: GetTermsRequest): Promise<GetTermsResponse> {
     return fetch('https://api.sejm.gov.pl/sejm/term')
       .then((response) => response.json())
-      .then(json => <GetTermsResponse>{ terms: <TermInfo>json });
+      .then((json) => <GetTermsResponse>{ terms: <TermInfo>json });
   }
 }
 

@@ -5,7 +5,7 @@ import { pluginSass } from '@rsbuild/plugin-sass';
 export default defineConfig({
   plugins: [pluginReact(), pluginSass()],
   html: {
-    title: 'Multi-Ninja',
+    title: 'SEJM-browser',
     favicon: './public/favicon.ico',
   },
 });
