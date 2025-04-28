@@ -5,6 +5,8 @@ import './assets/reset.scss';
 import './assets/index.scss';
 import { createBrowserRouter, RouterProvider } from 'react-router';
 import TermsComponent from './terms/terms';
+import { IndexedDBCacheManager } from './services/cache-manager';
+import { TermInfo } from './services/data-service';
 
 const router = createBrowserRouter([
   {
@@ -31,3 +33,12 @@ root.render(
     <div className="footer">© Łukasz Nowakowski</div>
   </div>,
 );
+
+const cache = new IndexedDBCacheManager<TermInfo>('terms', 15 * 60 * 1000);
+// You can also clean expired data manually if you want
+setInterval(
+  () => {
+    cache.cleanupExpired();
+  },
+  5 * 60 * 1000,
+); // clean every 5 minutes

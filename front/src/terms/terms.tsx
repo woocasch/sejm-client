@@ -15,10 +15,13 @@ export default function TermsComponent(props: Properties) {
   }, [terms]);
 
   useEffect(() => {
-    const request: DTS.GetTermsRequest = {
-      resultCallback: (v) => setTerms(v),
+    const fetch = async () => {
+      const request: DTS.GetTermsRequest = {};
+      const result = await apiClient.GetTerms(request);
+      if (!!result && !!result.terms) setTerms(result.terms);
     };
-    apiClient.GetTerms(request);
+
+    fetch().catch(console.error);
   }, []);
 
   return (
