@@ -11,7 +11,7 @@ export default function TermsComponent(props: Properties) {
   const [terms, setTerms] = useState<API.TermInfo[]>([]);
 
   const termsOrdered = useMemo(() => {
-    return terms.sort((a, b) => a.num - b.num);
+    return terms.sort((a, b) => b.num - a.num);
   }, [terms]);
 
   useEffect(() => {

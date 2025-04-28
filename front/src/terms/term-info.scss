@@ -5,8 +5,7 @@
     display: grid;
     grid-template-columns: 1fr repeat(2, 2fr);
     border-radius: 5px;
-    border: solid black 1px;
-    padding: 0.5em;
+    line-height: 2.5;
     background-color: color.scale(
         $background-color,
         $saturation: -25%,
@@ -14,7 +13,12 @@
     );
     color: color.scale($background-color, $saturation: 25%, $lightness: 40%);
     &:hover {
-        background-color: yellow;
+        background-image: linear-gradient(
+            to bottom,
+            color.scale($background-color, $saturation: -25%),
+            color.scale($background-color, $saturation: -25%, $lightness: -40%),
+            color.scale($background-color, $saturation: -25%)
+        );
     }
 
     > * {

@@ -12,7 +12,7 @@ export interface TermInfo {
   num: number;
   from: string;
   to: string;
-  current: true;
+  current: boolean;
   prints: TermPrintsData;
 }
 
