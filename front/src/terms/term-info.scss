@@ -12,6 +12,7 @@
         $lightness: -40%
     );
     color: color.scale($background-color, $saturation: 25%, $lightness: 40%);
+
     &:hover {
         background-image: linear-gradient(
             to bottom,

@@ -4,18 +4,10 @@ export interface GetTermsRequest {
   resultCallback: (terms: TermInfo[]) => void;
 }
 
-export interface TermPrintsData {
-  count: number;
-  lastChanged: Date;
-  link: string;
-}
-
 export interface TermInfo {
   num: number;
   from: string;
   to: string;
-  current: boolean;
-  prints: TermPrintsData;
 }
 
 export interface IDataService {
@@ -33,12 +25,6 @@ export class DataService implements IDataService {
             num: term.num || 0,
             from: term.from || '',
             to: term.to || '',
-            current: term.current || false,
-            prints: {
-              count: term.prints?.count || 0,
-              lastChanged: term.prints?.lastChanged || '',
-              link: term.prints?.link || '',
-            },
           });
         });
       }
