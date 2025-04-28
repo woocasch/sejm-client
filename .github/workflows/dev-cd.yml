@@ -1,5 +1,5 @@
 name: DevCD
-run-name: Dev deployment of '${{ github.ref_name }}'
+run-name: Dev deployment of branch '${{ github.event.workflow_run.head_branch }}' (SHA:${{ github.event.workflow_run.head_sha }})
 
 on:
   workflow_run:

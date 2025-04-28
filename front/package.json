@@ -1,5 +1,5 @@
 {
-  "name": "multi-ninja",
+  "name": "sejm",
   "version": "1.0.0",
   "private": true,
   "type": "module",
@@ -13,6 +13,7 @@
     "test": "vitest"
   },
   "dependencies": {
+    "idb": "^8.0.2",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-router": "^7.4.1"
