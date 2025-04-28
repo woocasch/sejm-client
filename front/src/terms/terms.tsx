@@ -1,21 +1,21 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import './terms.scss';
-import * as API from '../services/sejm-api-client';
+import * as DTS from '../services/data-service';
 import TermInfoComponent from './term-info';
 
 export interface Properties {}
 
 export default function TermsComponent(props: Properties) {
-  const apiClient: API.ISejmApiClient = API.SejmApiFactory();
+  const apiClient: DTS.IDataService = DTS.DataServiceFactory();
 
-  const [terms, setTerms] = useState<API.TermInfo[]>([]);
+  const [terms, setTerms] = useState<DTS.TermInfo[]>([]);
 
   const termsOrdered = useMemo(() => {
     return terms.sort((a, b) => b.num - a.num);
   }, [terms]);
 
   useEffect(() => {
-    const request: API.GetTermsRequest = {
+    const request: DTS.GetTermsRequest = {
       resultCallback: (v) => setTerms(v),
     };
     apiClient.GetTerms(request);

@@ -1,6 +1,6 @@
 import React from 'react';
 import './term-info.scss';
-import { TermInfo } from '../services/sejm-api-client';
+import { TermInfo } from '../services/data-service';
 
 export interface Properties {
   termData: TermInfo;
