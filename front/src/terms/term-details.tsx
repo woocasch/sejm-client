@@ -23,7 +23,7 @@ export default function TermDetailsComponent() {
 
   return (
     <div className="term-details">
-      <p>Szczegóły kadencji</p>
+      <h2>Szczegóły kadencji</h2>
       <p>Kadencja: {termId()}</p>
       <p>
         <NavLink to={`/terms/${termId()}/members`}>Lista posłów</NavLink>

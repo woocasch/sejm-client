@@ -1,12 +1,21 @@
 @use 'sass:color';
 @import './variables.scss';
 
+body {
+    color: color.adjust($background-color, $lightness: +50%);
+    a {
+        color: color.adjust($background-color, $lightness: +25%);
+    }
+}
+
 .root_container {
     font-family: 'Nunito', 'Quicksand', sans-serif;
     background-color: $background-color;
     border-radius: 15px;
     width: 90%;
     margin: auto;
+    margin-top: 1em;
+    margin-bottom: 1em;
     > .menu {
         text-align: center;
         line-height: 3;
