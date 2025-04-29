@@ -153,7 +153,9 @@ export default function TermMembersComponent() {
                   OrderByColumn.Id,
                 )}
               />
-              ID
+              <span onClick={columnOrderChangeRequested(OrderByColumn.Id)}>
+                ID
+              </span>
             </td>
             <td>
               <OrderingIconComponent
@@ -162,7 +164,11 @@ export default function TermMembersComponent() {
                   OrderByColumn.FullName,
                 )}
               />
-              Nazwisko i imię
+              <span
+                onClick={columnOrderChangeRequested(OrderByColumn.FullName)}
+              >
+                Nazwisko i imię
+              </span>
             </td>
             <td>
               <OrderingIconComponent
@@ -171,7 +177,11 @@ export default function TermMembersComponent() {
                   OrderByColumn.BirthDate,
                 )}
               />
-              Data urodzenia
+              <span
+                onClick={columnOrderChangeRequested(OrderByColumn.BirthDate)}
+              >
+                Data urodzenia
+              </span>
             </td>
             <td>
               <OrderingIconComponent
@@ -180,7 +190,9 @@ export default function TermMembersComponent() {
                   OrderByColumn.Club,
                 )}
               />
-              Klub
+              <span onClick={columnOrderChangeRequested(OrderByColumn.Club)}>
+                Klub
+              </span>
             </td>
             <td>
               <OrderingIconComponent
@@ -189,7 +201,11 @@ export default function TermMembersComponent() {
                   OrderByColumn.District,
                 )}
               />
-              Okręg
+              <span
+                onClick={columnOrderChangeRequested(OrderByColumn.District)}
+              >
+                Okręg
+              </span>
             </td>
             <td>
               <OrderingIconComponent
@@ -198,7 +214,11 @@ export default function TermMembersComponent() {
                   OrderByColumn.Voivodeship,
                 )}
               />
-              Województwo
+              <span
+                onClick={columnOrderChangeRequested(OrderByColumn.Voivodeship)}
+              >
+                Województwo
+              </span>
             </td>
           </tr>
         </thead>
