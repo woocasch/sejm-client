@@ -12,9 +12,11 @@ export interface ISejmApiClient {
 export class SejmApiClient implements ISejmApiClient {
   private readonly rootAddress: string = 'https://api.sejm.gov.pl/sejm/term';
 
-  constructor(private cache: ICacheManager) { }
+  constructor(private cache: ICacheManager) {}
 
-  public async GetTerms(request: Model.GetTermsRequest): Promise<Model.GetTermsResponse> {
+  public async GetTerms(
+    request: Model.GetTermsRequest,
+  ): Promise<Model.GetTermsResponse> {
     return await this.RetrieveCached<Model.TermInfo[], Model.GetTermsResponse>(
       this.cache.TermsStoreName,
       'ALL',
@@ -37,7 +39,7 @@ export class SejmApiClient implements ISejmApiClient {
       Model.GetParliamentMembersResponse
     >(
       this.cache.MembersStoreName,
-      'ALL',
+      `term_${request.termId}`,
       async () => {
         const address = `${this.rootAddress}${request.termId}/MP`;
         const response = await fetch(address);
