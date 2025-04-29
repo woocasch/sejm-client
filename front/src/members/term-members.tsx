@@ -4,19 +4,10 @@ import { NavLink, useParams } from 'react-router';
 import * as DS from '../services/data-service';
 import * as DSM from '../services/data-service.model';
 import OrderingIconComponent, { OrderingDirection } from './ordering-icon';
+import ColumnHeaderComponent, { OrderByColumn } from './column-header';
 
 export interface RouteParameters {
   termId: string;
-}
-
-enum OrderByColumn {
-  None,
-  Id,
-  FullName,
-  BirthDate,
-  Club,
-  District,
-  Voivodeship,
 }
 
 export default function TermMembersComponent() {
@@ -28,7 +19,6 @@ export default function TermMembersComponent() {
   const [orderByDirection, setOrderByDirection] = useState<OrderingDirection>(
     OrderingDirection.None,
   );
-  const idOrder = createOrderMemo(OrderByColumn.Id);
   const fullNameOrder = createOrderMemo(OrderByColumn.FullName);
   const birthDateOrder = createOrderMemo(OrderByColumn.BirthDate);
   const clubOrder = createOrderMemo(OrderByColumn.Club);
@@ -39,12 +29,22 @@ export default function TermMembersComponent() {
     OrderByColumn,
     (member: DSM.ParliamentMember) => any
   > = new Map<OrderByColumn, (member: DSM.ParliamentMember) => any>([
-    [OrderByColumn.Id, (m) => m.id],
     [OrderByColumn.FullName, (m) => m.fullName],
     [OrderByColumn.BirthDate, (m) => m.birthDate],
     [OrderByColumn.Club, (m) => m.club],
     [OrderByColumn.District, (m) => m.districtName],
     [OrderByColumn.Voivodeship, (m) => m.voivodeship],
+  ]);
+
+  const orderColumnsComparerMap: Map<
+    OrderByColumn,
+    (a: any, b: any) => number
+  > = new Map<OrderByColumn, (a: any, b: any) => number>([
+    [OrderByColumn.FullName, (a: string, b: string) => a.localeCompare(b)],
+    [OrderByColumn.BirthDate, (a: string, b: string) => a.localeCompare(b)],
+    [OrderByColumn.Club, (a: string, b: string) => a.localeCompare(b)],
+    [OrderByColumn.District, (a: string, b: string) => a.localeCompare(b)],
+    [OrderByColumn.Voivodeship, (a: string, b: string) => a.localeCompare(b)],
   ]);
 
   const propertyRetriever:
@@ -57,11 +57,22 @@ export default function TermMembersComponent() {
 
     return orderColumnsMap.get(orderBy);
   }, [orderBy]);
+
+  const propertyComparer: ((a: any, b: any) => number) | null | undefined =
+    useMemo(() => {
+      if (!orderBy) {
+        return null;
+      }
+
+      return orderColumnsComparerMap.get(orderBy);
+    }, [orderBy]);
+
   const orderedMembers = useMemo(() => {
     if (
       orderBy == OrderByColumn.None ||
       orderByDirection == OrderingDirection.None ||
-      !propertyRetriever
+      !propertyRetriever ||
+      !propertyComparer
     ) {
       return members;
     }
@@ -73,11 +84,12 @@ export default function TermMembersComponent() {
         orderByDirection == OrderingDirection.Ascending ? 1 : -1;
       const isBSmallerResult =
         orderByDirection == OrderingDirection.Ascending ? -1 : 1;
-      if (propertyA > propertyB) {
+      const rawResult = propertyComparer(propertyA, propertyB);
+      if (rawResult < 0) {
         return isBSmallerResult;
       }
 
-      if (propertyA == propertyB) {
+      if (rawResult == 0) {
         return 0;
       }
 
@@ -122,24 +134,24 @@ export default function TermMembersComponent() {
   });
 
   function columnOrderChangeRequested(column: OrderByColumn) {
-    return (event: MouseEvent) => {
-      if (column == orderBy) {
-        const newDirection =
-          orderByDirection != OrderingDirection.Ascending
-            ? OrderingDirection.Ascending
-            : OrderingDirection.Descending;
-        setOrderByDirection(newDirection);
-        return;
-      }
+    if (column == orderBy) {
+      const newDirection =
+        orderByDirection != OrderingDirection.Ascending
+          ? OrderingDirection.Ascending
+          : OrderingDirection.Descending;
+      setOrderByDirection(newDirection);
+      return;
+    }
 
-      setOrderBy(column);
-      setOrderByDirection(OrderingDirection.Ascending);
-    };
+    setOrderBy(column);
+    setOrderByDirection(OrderingDirection.Ascending);
   }
 
   return (
     <div className="term-members">
       <h2>Lista posłów {termId()} kadencji</h2>
+      <div>Kolumna: {orderBy}</div>
+      <div>Kierunek: {orderByDirection}</div>
       <NavLink to={`/terms/${termId()}`}>
         &lt;&lt; Wróć do szczegółów kadencji
       </NavLink>
@@ -147,78 +159,44 @@ export default function TermMembersComponent() {
         <thead>
           <tr>
             <td>
-              <OrderingIconComponent
-                selectedState={idOrder}
-                onOrderingChangeRequested={columnOrderChangeRequested(
-                  OrderByColumn.Id,
-                )}
+              <ColumnHeaderComponent
+                column={OrderByColumn.FullName}
+                columnDirection={fullNameOrder}
+                header="Nazwisko i imię"
+                columnOrderChangeRequest={columnOrderChangeRequested}
               />
-              <span onClick={columnOrderChangeRequested(OrderByColumn.Id)}>
-                ID
-              </span>
             </td>
             <td>
-              <OrderingIconComponent
-                selectedState={fullNameOrder}
-                onOrderingChangeRequested={columnOrderChangeRequested(
-                  OrderByColumn.FullName,
-                )}
+              <ColumnHeaderComponent
+                column={OrderByColumn.BirthDate}
+                columnDirection={birthDateOrder}
+                header="Data urodzenia"
+                columnOrderChangeRequest={columnOrderChangeRequested}
               />
-              <span
-                onClick={columnOrderChangeRequested(OrderByColumn.FullName)}
-              >
-                Nazwisko i imię
-              </span>
             </td>
             <td>
-              <OrderingIconComponent
-                selectedState={birthDateOrder}
-                onOrderingChangeRequested={columnOrderChangeRequested(
-                  OrderByColumn.BirthDate,
-                )}
+              <ColumnHeaderComponent
+                column={OrderByColumn.Club}
+                columnDirection={clubOrder}
+                header="Klub"
+                columnOrderChangeRequest={columnOrderChangeRequested}
               />
-              <span
-                onClick={columnOrderChangeRequested(OrderByColumn.BirthDate)}
-              >
-                Data urodzenia
-              </span>
             </td>
             <td>
-              <OrderingIconComponent
-                selectedState={clubOrder}
-                onOrderingChangeRequested={columnOrderChangeRequested(
-                  OrderByColumn.Club,
-                )}
+              <ColumnHeaderComponent
+                column={OrderByColumn.District}
+                columnDirection={districtOrder}
+                header="Okręg"
+                columnOrderChangeRequest={columnOrderChangeRequested}
               />
-              <span onClick={columnOrderChangeRequested(OrderByColumn.Club)}>
-                Klub
-              </span>
             </td>
             <td>
-              <OrderingIconComponent
-                selectedState={districtOrder}
-                onOrderingChangeRequested={columnOrderChangeRequested(
-                  OrderByColumn.District,
-                )}
+              <ColumnHeaderComponent
+                column={OrderByColumn.Voivodeship}
+                columnDirection={voivodeshipOrder}
+                header="Województwo"
+                columnOrderChangeRequest={columnOrderChangeRequested}
               />
-              <span
-                onClick={columnOrderChangeRequested(OrderByColumn.District)}
-              >
-                Okręg
-              </span>
-            </td>
-            <td>
-              <OrderingIconComponent
-                selectedState={voivodeshipOrder}
-                onOrderingChangeRequested={columnOrderChangeRequested(
-                  OrderByColumn.Voivodeship,
-                )}
-              />
-              <span
-                onClick={columnOrderChangeRequested(OrderByColumn.Voivodeship)}
-              >
-                Województwo
-              </span>
             </td>
           </tr>
         </thead>
@@ -230,7 +208,6 @@ export default function TermMembersComponent() {
         <tbody>
           {members.map((member, i) => (
             <tr key={i}>
-              <td>{member.id}</td>
               <td>{member.fullName}</td>
               <td>{member.birthDate}</td>
               <td>{member.club}</td>
