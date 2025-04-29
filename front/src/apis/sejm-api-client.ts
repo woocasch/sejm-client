@@ -1,76 +1,27 @@
 import { ICacheManager, CacheManagerFactory } from '../services/cache-manager';
-
-export interface GetTermsRequest {}
-
-export interface TermPrintsData {
-  count?: number;
-  lastChanged?: Date;
-  link?: string;
-}
-
-export interface TermInfo {
-  num?: number;
-  from?: string;
-  to?: string;
-  current?: boolean;
-  prints?: TermPrintsData;
-}
-
-export interface GetTermsResponse {
-  terms?: TermInfo[];
-}
-
-export interface GetParliamentMembersRequest {
-  termId: number;
-}
-
-export interface ParliamentMember {
-  accusativeName: string;
-  active: boolean;
-  birthDate: string;
-  birthLocation: string;
-  club: string;
-  districtName: string;
-  districtNum: number;
-  educationLevel: string;
-  email: string;
-  firstLastName: string;
-  firstName: string;
-  genitiveName: string;
-  id: number;
-  lastFirstName: string;
-  lastName: string;
-  numberOfVotes: number;
-  profession: string;
-  secondName: string;
-  voivodeship: string;
-}
-
-export interface GetParliamentMembersResponse {
-  members: ParliamentMember[];
-}
+import * as Model from './sejm-api-client.model';
 
 export interface ISejmApiClient {
-  GetTerms(request: GetTermsRequest): Promise<GetTermsResponse>;
+  GetTerms(request: Model.GetTermsRequest): Promise<Model.GetTermsResponse>;
 
   GetParliamentMembers(
-    request: GetParliamentMembersRequest,
-  ): Promise<GetParliamentMembersResponse>;
+    request: Model.GetParliamentMembersRequest,
+  ): Promise<Model.GetParliamentMembersResponse>;
 }
 
 export class SejmApiClient implements ISejmApiClient {
   private readonly rootAddress: string = 'https://api.sejm.gov.pl/sejm/term';
 
-  constructor(private cache: ICacheManager) {}
+  constructor(private cache: ICacheManager) { }
 
-  public async GetTerms(request: GetTermsRequest): Promise<GetTermsResponse> {
-    return await this.RetrieveCached<TermInfo[], GetTermsResponse>(
+  public async GetTerms(request: Model.GetTermsRequest): Promise<Model.GetTermsResponse> {
+    return await this.RetrieveCached<Model.TermInfo[], Model.GetTermsResponse>(
       this.cache.TermsStoreName,
       'ALL',
       async () => {
         const response = await fetch(this.rootAddress);
         const json = await response.json();
-        return <TermInfo[]>json;
+        return <Model.TermInfo[]>json;
       },
       (v) => {
         return { terms: v };
@@ -79,11 +30,11 @@ export class SejmApiClient implements ISejmApiClient {
   }
 
   public async GetParliamentMembers(
-    request: GetParliamentMembersRequest,
-  ): Promise<GetParliamentMembersResponse> {
+    request: Model.GetParliamentMembersRequest,
+  ): Promise<Model.GetParliamentMembersResponse> {
     return await this.RetrieveCached<
-      ParliamentMember[],
-      GetParliamentMembersResponse
+      Model.ParliamentMember[],
+      Model.GetParliamentMembersResponse
     >(
       this.cache.MembersStoreName,
       'ALL',
@@ -91,9 +42,9 @@ export class SejmApiClient implements ISejmApiClient {
         const address = `${this.rootAddress}${request.termId}/MP`;
         const response = await fetch(address);
         const json = await response.json();
-        return <ParliamentMember[]>json;
+        return <Model.ParliamentMember[]>json;
       },
-      (v) => <GetParliamentMembersResponse>{ members: v },
+      (v) => <Model.GetParliamentMembersResponse>{ members: v },
     );
   }
 

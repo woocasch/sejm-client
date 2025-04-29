@@ -1,9 +1,9 @@
-import * as API from '../apis/sejm-api-client';
-import * as Model from './data-service.model';
+import * as API from '../apis/sejm-api-client.model';
+import * as Service from './data-service.model';
 
 export class DataServiceMappers {
-  public static MapTermToTermsListItem(input: API.TermInfo): Model.TermInfo {
-    return <Model.TermInfo>{
+  public static MapTermToTermsListItem(input: API.TermInfo): Service.TermInfo {
+    return <Service.TermInfo>{
       num: input.num || 0,
       from: input.from || '',
       to: input.to || '',
@@ -12,8 +12,8 @@ export class DataServiceMappers {
 
   public static MapMemberToListItem(
     input: API.ParliamentMember,
-  ): Model.ParliamentMember {
-    return <Model.ParliamentMember>{
+  ): Service.ParliamentMember {
+    return <Service.ParliamentMember>{
       id: input.id,
       fullName: input.lastFirstName,
       birthDate: input.birthDate,
