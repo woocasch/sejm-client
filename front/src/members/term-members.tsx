@@ -1,33 +1,39 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, MouseEvent } from 'react';
 import './term-members.scss';
 import { NavLink, useParams } from 'react-router';
 import * as DS from '../services/data-service';
 import * as DSM from '../services/data-service.model';
 import OrderingIconComponent, { OrderingDirection } from './ordering-icon';
 
+export interface RouteParameters {
+  termId: string;
+}
+
+enum OrderByColumn {
+  None,
+  Id,
+  FullName,
+  BirthDate,
+  Club,
+  District,
+  Voivodeship,
+}
+
 export default function TermMembersComponent() {
   const dataService: DS.IDataService = DS.DataServiceFactory();
 
-  const params = useParams();
+  const params = useParams<keyof RouteParameters>();
   const [members, setMembers] = useState<DSM.ParliamentMember[]>([]);
-  const [idOrder, setIdOrder] = useState<OrderingDirection>(
+  const [orderBy, setOrderBy] = useState<OrderByColumn>(OrderByColumn.None);
+  const [orderByDirection, setOrderByDirection] = useState<OrderingDirection>(
     OrderingDirection.None,
   );
-  const [fullNameOrder, setFullNameOrder] = useState<OrderingDirection>(
-    OrderingDirection.None,
-  );
-  const [birthDateOrder, setBirthDateOrder] = useState<OrderingDirection>(
-    OrderingDirection.None,
-  );
-  const [clubOrder, setClubOrder] = useState<OrderingDirection>(
-    OrderingDirection.None,
-  );
-  const [districtOrder, setDistrictOrder] = useState<OrderingDirection>(
-    OrderingDirection.None,
-  );
-  const [voivodeshipOrder, setVoivodeshipOrder] = useState<OrderingDirection>(
-    OrderingDirection.None,
-  );
+  const idOrder = createOrderMemo(OrderByColumn.Id);
+  const fullNameOrder = createOrderMemo(OrderByColumn.FullName);
+  const birthDateOrder = createOrderMemo(OrderByColumn.BirthDate);
+  const clubOrder = createOrderMemo(OrderByColumn.Club);
+  const districtOrder = createOrderMemo(OrderByColumn.District);
+  const voivodeshipOrder = createOrderMemo(OrderByColumn.Voivodeship);
 
   function termId() {
     if (!params || !params.termId) {
@@ -40,6 +46,16 @@ export default function TermMembersComponent() {
     }
 
     return parsed;
+  }
+
+  function createOrderMemo(column: OrderByColumn): OrderingDirection {
+    return useMemo<OrderingDirection>(() => {
+      if (orderBy != column) {
+        return OrderingDirection.None;
+      }
+
+      return orderByDirection;
+    }, [orderBy, orderByDirection]);
   }
 
   useEffect(() => {
@@ -55,6 +71,22 @@ export default function TermMembersComponent() {
     fetch().catch(console.error);
   });
 
+  function columnOrderChangeRequested(column: OrderByColumn) {
+    return (event: MouseEvent) => {
+      if (column == orderBy) {
+        const newDirection =
+          orderByDirection != OrderingDirection.Ascending
+            ? OrderingDirection.Ascending
+            : OrderingDirection.Descending;
+        setOrderByDirection(newDirection);
+        return;
+      }
+
+      setOrderBy(column);
+      setOrderByDirection(OrderingDirection.Ascending);
+    };
+  }
+
   return (
     <div className="term-members">
       <h2>Lista posłów {termId()} kadencji</h2>
@@ -65,27 +97,57 @@ export default function TermMembersComponent() {
         <thead>
           <tr>
             <td>
-              <OrderingIconComponent selectedState={idOrder} />
+              <OrderingIconComponent
+                selectedState={idOrder}
+                onOrderingChangeRequested={columnOrderChangeRequested(
+                  OrderByColumn.Id,
+                )}
+              />
               ID
             </td>
             <td>
-              <OrderingIconComponent selectedState={fullNameOrder} />
+              <OrderingIconComponent
+                selectedState={fullNameOrder}
+                onOrderingChangeRequested={columnOrderChangeRequested(
+                  OrderByColumn.FullName,
+                )}
+              />
               Nazwisko i imię
             </td>
             <td>
-              <OrderingIconComponent selectedState={birthDateOrder} />
+              <OrderingIconComponent
+                selectedState={birthDateOrder}
+                onOrderingChangeRequested={columnOrderChangeRequested(
+                  OrderByColumn.BirthDate,
+                )}
+              />
               Data urodzenia
             </td>
             <td>
-              <OrderingIconComponent selectedState={clubOrder} />
+              <OrderingIconComponent
+                selectedState={clubOrder}
+                onOrderingChangeRequested={columnOrderChangeRequested(
+                  OrderByColumn.Club,
+                )}
+              />
               Klub
             </td>
             <td>
-              <OrderingIconComponent selectedState={districtOrder} />
+              <OrderingIconComponent
+                selectedState={districtOrder}
+                onOrderingChangeRequested={columnOrderChangeRequested(
+                  OrderByColumn.District,
+                )}
+              />
               Okręg
             </td>
             <td>
-              <OrderingIconComponent selectedState={voivodeshipOrder} />
+              <OrderingIconComponent
+                selectedState={voivodeshipOrder}
+                onOrderingChangeRequested={columnOrderChangeRequested(
+                  OrderByColumn.Voivodeship,
+                )}
+              />
               Województwo
             </td>
           </tr>

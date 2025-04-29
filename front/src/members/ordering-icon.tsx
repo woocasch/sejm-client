@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, MouseEvent } from 'react';
 import iconNeutral from '../assets/icons/members/ordering-none.svg';
 import iconAscending from '../assets/icons/members/ordering-asc.svg';
 import iconDescending from '../assets/icons/members/ordering-desc.svg';
@@ -11,6 +11,7 @@ export enum OrderingDirection {
 
 export interface Properties {
   selectedState: OrderingDirection;
+  onOrderingChangeRequested: (event: MouseEvent) => void;
 }
 
 export default function OrderingIconComponent(props: Properties) {
@@ -24,5 +25,16 @@ export default function OrderingIconComponent(props: Properties) {
         return iconDescending;
     }
   }, [props.selectedState]);
-  return <img src={selectedIcon} className="ordering-icon" />;
+
+  function onOrderingChangeRequested(event: MouseEvent): void {
+    props.onOrderingChangeRequested(event);
+  }
+
+  return (
+    <img
+      src={selectedIcon}
+      className="ordering-icon"
+      onClick={onOrderingChangeRequested}
+    />
+  );
 }
