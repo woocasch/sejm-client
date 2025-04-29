@@ -5,8 +5,9 @@ import './assets/reset.scss';
 import './assets/index.scss';
 import { createBrowserRouter, RouterProvider } from 'react-router';
 import TermsComponent from './terms/terms';
-import { IndexedDBCacheManager } from './services/cache-manager';
-import { TermInfo } from './services/data-service';
+import { CacheManagerFactory } from './services/cache-manager';
+import TermDetailsComponent from './terms/term-details';
+import TermMembersComponent from './members/term-members';
 
 const router = createBrowserRouter([
   {
@@ -16,6 +17,14 @@ const router = createBrowserRouter([
   {
     path: '/terms',
     Component: TermsComponent,
+  },
+  {
+    path: '/terms/:termId',
+    Component: TermDetailsComponent,
+  },
+  {
+    path: '/terms/:termId/members',
+    Component: TermMembersComponent,
   },
 ]);
 
@@ -34,7 +43,7 @@ root.render(
   </div>,
 );
 
-const cache = new IndexedDBCacheManager<TermInfo>('terms', 15 * 60 * 1000);
+const cache = CacheManagerFactory();
 // You can also clean expired data manually if you want
 setInterval(
   () => {

@@ -9,4 +9,19 @@ export class DataServiceMappers {
       to: input.to || '',
     };
   }
+
+  public static MapMemberToListItem(
+    input: API.ParliamentMember,
+  ): Model.ParliamentMember {
+    return <Model.ParliamentMember>{
+      id: input.id,
+      fullName: input.lastFirstName,
+      birthDate: input.birthDate,
+      isActive: input.active,
+      club: input.club,
+      districtName: input.districtName,
+      districtNumber: input.districtNum,
+      voivodeship: input.voivodeship,
+    };
+  }
 }

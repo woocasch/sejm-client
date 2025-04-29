@@ -1,4 +1,4 @@
-import { IndexedDBCacheManager } from '../services/cache-manager';
+import { ICacheManager, CacheManagerFactory } from '../services/cache-manager';
 
 export interface GetTermsRequest {}
 
@@ -61,14 +61,11 @@ export interface ISejmApiClient {
 export class SejmApiClient implements ISejmApiClient {
   private readonly rootAddress: string = 'https://api.sejm.gov.pl/sejm/term';
 
-  constructor(
-    private termsCache: IndexedDBCacheManager<TermInfo[]>,
-    private membersCache: IndexedDBCacheManager<ParliamentMember[]>,
-  ) {}
+  constructor(private cache: ICacheManager) {}
 
   public async GetTerms(request: GetTermsRequest): Promise<GetTermsResponse> {
-    return await SejmApiClient.RetrieveCached<TermInfo[], GetTermsResponse>(
-      this.termsCache,
+    return await this.RetrieveCached<TermInfo[], GetTermsResponse>(
+      this.cache.TermsStoreName,
       'ALL',
       async () => {
         const response = await fetch(this.rootAddress);
@@ -84,11 +81,11 @@ export class SejmApiClient implements ISejmApiClient {
   public async GetParliamentMembers(
     request: GetParliamentMembersRequest,
   ): Promise<GetParliamentMembersResponse> {
-    return await SejmApiClient.RetrieveCached<
+    return await this.RetrieveCached<
       ParliamentMember[],
       GetParliamentMembersResponse
     >(
-      this.membersCache,
+      this.cache.MembersStoreName,
       'ALL',
       async () => {
         const address = `${this.rootAddress}${request.termId}/MP`;
@@ -100,33 +97,23 @@ export class SejmApiClient implements ISejmApiClient {
     );
   }
 
-  private static async RetrieveCached<T, TResult>(
-    cache: IndexedDBCacheManager<T>,
+  private async RetrieveCached<T, TResult>(
+    storeName: string,
     key: string,
     apiCall: () => Promise<T>,
     resultFactory: (result: T) => TResult,
   ): Promise<TResult> {
-    const cachedItems = await cache.get(key);
+    const cachedItems = await this.cache.get<T>(storeName, key);
     if (!!cachedItems) {
       return resultFactory(cachedItems);
     }
 
     const result = await apiCall();
-    await cache.set(key, result);
+    await this.cache.set(storeName, key, result);
     return resultFactory(result);
   }
 }
 
-const termsCache = new IndexedDBCacheManager<TermInfo[]>(
-  'terms',
-  15 * 60 * 1000,
-);
-
-const membersCache = new IndexedDBCacheManager<ParliamentMember[]>(
-  'members',
-  15 * 60 * 1000,
-);
-
 export function SejmApiFactory(): ISejmApiClient {
-  return new SejmApiClient(termsCache, membersCache);
+  return new SejmApiClient(CacheManagerFactory());
 }

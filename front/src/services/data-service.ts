@@ -4,10 +4,14 @@ import { DataServiceMappers as Mapper } from './data-service-mappers';
 
 export interface IDataService {
   GetTerms(request: Model.GetTermsRequest): Promise<Model.GetTermsResponse>;
+  GetMembers(
+    request: Model.GetMembersRequest,
+  ): Promise<Model.GetMembersResponse>;
 }
 
 export class DataService implements IDataService {
   constructor(private api: API.ISejmApiClient) {}
+
   public async GetTerms(
     request: Model.GetTermsRequest,
   ): Promise<Model.GetTermsResponse> {
@@ -22,6 +26,26 @@ export class DataService implements IDataService {
     });
     return {
       terms: retrieved,
+    };
+  }
+
+  public async GetMembers(
+    request: Model.GetMembersRequest,
+  ): Promise<Model.GetMembersResponse> {
+    const retrieved = await this.api
+      .GetParliamentMembers({ termId: request.termId })
+      .then((result) => {
+        if (!result.members) {
+          return [];
+        }
+
+        var output: Model.ParliamentMember[] = result.members.map(
+          Mapper.MapMemberToListItem,
+        );
+        return output;
+      });
+    return {
+      members: retrieved,
     };
   }
 }

@@ -1,14 +1,15 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import './terms.scss';
-import * as DTS from '../services/data-service';
+import * as DS from '../services/data-service';
+import * as DSM from '../services/data-service.model';
 import TermInfoComponent from './term-info';
 
 export interface Properties {}
 
 export default function TermsComponent(props: Properties) {
-  const apiClient: DTS.IDataService = DTS.DataServiceFactory();
+  const apiClient: DS.IDataService = DS.DataServiceFactory();
 
-  const [terms, setTerms] = useState<DTS.TermInfo[]>([]);
+  const [terms, setTerms] = useState<DSM.TermInfo[]>([]);
 
   const termsOrdered = useMemo(() => {
     return terms.sort((a, b) => b.num - a.num);
@@ -16,7 +17,7 @@ export default function TermsComponent(props: Properties) {
 
   useEffect(() => {
     const fetch = async () => {
-      const request: DTS.GetTermsRequest = {};
+      const request: DSM.GetTermsRequest = {};
       const result = await apiClient.GetTerms(request);
       if (!!result && !!result.terms) setTerms(result.terms);
     };
