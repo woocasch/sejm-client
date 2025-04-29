@@ -35,6 +35,56 @@ export default function TermMembersComponent() {
   const districtOrder = createOrderMemo(OrderByColumn.District);
   const voivodeshipOrder = createOrderMemo(OrderByColumn.Voivodeship);
 
+  const orderColumnsMap: Map<
+    OrderByColumn,
+    (member: DSM.ParliamentMember) => any
+  > = new Map<OrderByColumn, (member: DSM.ParliamentMember) => any>([
+    [OrderByColumn.Id, (m) => m.id],
+    [OrderByColumn.FullName, (m) => m.fullName],
+    [OrderByColumn.BirthDate, (m) => m.birthDate],
+    [OrderByColumn.Club, (m) => m.club],
+    [OrderByColumn.District, (m) => m.districtName],
+    [OrderByColumn.Voivodeship, (m) => m.voivodeship],
+  ]);
+
+  const propertyRetriever:
+    | ((member: DSM.ParliamentMember) => any)
+    | null
+    | undefined = useMemo(() => {
+    if (!orderBy) {
+      return null;
+    }
+
+    return orderColumnsMap.get(orderBy);
+  }, [orderBy]);
+  const orderedMembers = useMemo(() => {
+    if (
+      orderBy == OrderByColumn.None ||
+      orderByDirection == OrderingDirection.None ||
+      !propertyRetriever
+    ) {
+      return members;
+    }
+
+    return members.sort((a, b) => {
+      const propertyA = propertyRetriever(a);
+      const propertyB = propertyRetriever(b);
+      const isBLargerResult =
+        orderByDirection == OrderingDirection.Ascending ? 1 : -1;
+      const isBSmallerResult =
+        orderByDirection == OrderingDirection.Ascending ? -1 : 1;
+      if (propertyA > propertyB) {
+        return isBSmallerResult;
+      }
+
+      if (propertyA == propertyB) {
+        return 0;
+      }
+
+      return isBLargerResult;
+    });
+  }, [members, orderBy, orderByDirection]);
+
   function termId() {
     if (!params || !params.termId) {
       return -1;
