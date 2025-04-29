@@ -1,4 +1,5 @@
-import React, { MouseEvent } from 'react';
+import React, { ChangeEvent, MouseEvent } from 'react';
+import './column-header.scss';
 
 import OrderingIconComponent, { OrderingDirection } from './ordering-icon';
 
@@ -16,6 +17,7 @@ export interface Properties {
   column: OrderByColumn;
   header: string;
   columnOrderChangeRequest: (column: OrderByColumn) => void;
+  filterChanged: (column: OrderByColumn, filterText: string) => void;
 }
 
 export default function ColumnHeaderComponent(props: Properties) {
@@ -23,13 +25,22 @@ export default function ColumnHeaderComponent(props: Properties) {
     props.columnOrderChangeRequest(props.column);
   }
 
+  function onControlBlur(event: any): void {
+    props.filterChanged(props.column, event.target!.value);
+  }
+
   return (
-    <div>
-      <OrderingIconComponent
-        selectedState={props.columnDirection}
-        onOrderingChangeRequested={onOrderChangeRequested}
-      />
-      <span onClick={onOrderChangeRequested}>{props.header}</span>
+    <div className="column-header">
+      <div className="title">
+        <OrderingIconComponent
+          selectedState={props.columnDirection}
+          onOrderingChangeRequested={onOrderChangeRequested}
+        />
+        <span onClick={onOrderChangeRequested}>{props.header}</span>
+      </div>
+      <div className="filter">
+        <input type="text" onBlur={onControlBlur} />
+      </div>
     </div>
   );
 }

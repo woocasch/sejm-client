@@ -1,4 +1,11 @@
-import React, { useEffect, useMemo, useState, MouseEvent } from 'react';
+import React, {
+  useEffect,
+  useMemo,
+  useState,
+  MouseEvent,
+  Dispatch,
+  SetStateAction,
+} from 'react';
 import './term-members.scss';
 import { NavLink, useParams } from 'react-router';
 import * as DS from '../services/data-service';
@@ -14,7 +21,24 @@ export default function TermMembersComponent() {
   const dataService: DS.IDataService = DS.DataServiceFactory();
 
   const params = useParams<keyof RouteParameters>();
+
+  function termId() {
+    if (!params || !params.termId) {
+      return -1;
+    }
+
+    const parsed = parseInt(params.termId);
+    if (isNaN(parsed)) {
+      return -1;
+    }
+
+    return parsed;
+  }
+
   const [members, setMembers] = useState<DSM.ParliamentMember[]>([]);
+  const [displayMembers, setDisplayMembers] = useState<DSM.ParliamentMember[]>(
+    [],
+  );
   const [orderBy, setOrderBy] = useState<OrderByColumn>(OrderByColumn.None);
   const [orderByDirection, setOrderByDirection] = useState<OrderingDirection>(
     OrderingDirection.None,
@@ -24,6 +48,12 @@ export default function TermMembersComponent() {
   const clubOrder = createOrderMemo(OrderByColumn.Club);
   const districtOrder = createOrderMemo(OrderByColumn.District);
   const voivodeshipOrder = createOrderMemo(OrderByColumn.Voivodeship);
+
+  const [fullNameFilter, setFullNameFilter] = useState<string>('');
+  const [birthDateFilter, setBirthDateFilter] = useState<string>('');
+  const [clubFilter, setClubFilter] = useState<string>('');
+  const [districtFilter, setDistrictFilter] = useState<string>('');
+  const [voivodeshipFilter, setVoivodeshipFilter] = useState<string>('');
 
   const orderColumnsMap: Map<
     OrderByColumn,
@@ -47,6 +77,17 @@ export default function TermMembersComponent() {
     [OrderByColumn.Voivodeship, (a: string, b: string) => a.localeCompare(b)],
   ]);
 
+  const columnFiltersSetters: Map<
+    OrderByColumn,
+    Dispatch<SetStateAction<string>>
+  > = new Map<OrderByColumn, Dispatch<SetStateAction<string>>>([
+    [OrderByColumn.FullName, setFullNameFilter],
+    [OrderByColumn.BirthDate, setBirthDateFilter],
+    [OrderByColumn.Club, setClubFilter],
+    [OrderByColumn.District, setDistrictFilter],
+    [OrderByColumn.Voivodeship, setVoivodeshipFilter],
+  ]);
+
   const propertyRetriever:
     | ((member: DSM.ParliamentMember) => any)
     | null
@@ -67,48 +108,86 @@ export default function TermMembersComponent() {
       return orderColumnsComparerMap.get(orderBy);
     }, [orderBy]);
 
-  const orderedMembers = useMemo(() => {
-    if (
-      orderBy == OrderByColumn.None ||
-      orderByDirection == OrderingDirection.None ||
-      !propertyRetriever ||
-      !propertyComparer
-    ) {
-      return members;
+  function applyFilter(
+    data: DSM.ParliamentMember[],
+    filterValue: string,
+    propertyGetter: (m: DSM.ParliamentMember) => string,
+  ) {
+    if (!!filterValue) {
+      data = data.filter((m) => {
+        const property = propertyGetter(m).toLocaleLowerCase();
+        return property.indexOf(filterValue.toLocaleLowerCase()) >= 0;
+      });
     }
 
-    return members.sort((a, b) => {
-      const propertyA = propertyRetriever(a);
-      const propertyB = propertyRetriever(b);
-      const isBLargerResult =
-        orderByDirection == OrderingDirection.Ascending ? 1 : -1;
-      const isBSmallerResult =
-        orderByDirection == OrderingDirection.Ascending ? -1 : 1;
-      const rawResult = propertyComparer(propertyA, propertyB);
-      if (rawResult < 0) {
-        return isBSmallerResult;
-      }
-
-      if (rawResult == 0) {
-        return 0;
-      }
-
-      return isBLargerResult;
-    });
-  }, [members, orderBy, orderByDirection]);
-
-  function termId() {
-    if (!params || !params.termId) {
-      return -1;
-    }
-
-    const parsed = parseInt(params.termId);
-    if (isNaN(parsed)) {
-      return -1;
-    }
-
-    return parsed;
+    return data;
   }
+
+  function filterData(): DSM.ParliamentMember[] {
+    let processedList = members.slice();
+    processedList = applyFilter(
+      processedList,
+      fullNameFilter,
+      (m) => m.fullName,
+    );
+    processedList = applyFilter(
+      processedList,
+      birthDateFilter,
+      (m) => m.birthDate,
+    );
+    processedList = applyFilter(processedList, clubFilter, (m) => m.club);
+    processedList = applyFilter(
+      processedList,
+      districtFilter,
+      (m) => m.districtName,
+    );
+    processedList = applyFilter(
+      processedList,
+      voivodeshipFilter,
+      (m) => m.voivodeship,
+    );
+    if (
+      orderBy != OrderByColumn.None &&
+      orderByDirection != OrderingDirection.None &&
+      !!propertyRetriever &&
+      !!propertyComparer
+    ) {
+      processedList = processedList.sort((a, b) => {
+        const propertyA = propertyRetriever(a);
+        const propertyB = propertyRetriever(b);
+        const isBLargerResult =
+          orderByDirection == OrderingDirection.Ascending ? 1 : -1;
+        const isBSmallerResult =
+          orderByDirection == OrderingDirection.Ascending ? -1 : 1;
+        const rawResult = propertyComparer(propertyA, propertyB);
+        if (rawResult < 0) {
+          return isBSmallerResult;
+        }
+
+        if (rawResult == 0) {
+          return 0;
+        }
+
+        return isBLargerResult;
+      });
+    }
+
+    return processedList;
+  }
+
+  useEffect(() => {
+    const data = filterData();
+    setDisplayMembers(data);
+  }, [
+    members,
+    fullNameFilter,
+    birthDateFilter,
+    clubFilter,
+    districtFilter,
+    voivodeshipFilter,
+    orderBy,
+    orderByDirection,
+  ]);
 
   function createOrderMemo(column: OrderByColumn): OrderingDirection {
     return useMemo<OrderingDirection>(() => {
@@ -131,7 +210,7 @@ export default function TermMembersComponent() {
     };
 
     fetch().catch(console.error);
-  });
+  }, []);
 
   function columnOrderChangeRequested(column: OrderByColumn) {
     if (column == orderBy) {
@@ -147,15 +226,31 @@ export default function TermMembersComponent() {
     setOrderByDirection(OrderingDirection.Ascending);
   }
 
+  function onFilterChanged(column: OrderByColumn, filterText: string) {
+    const filterSetter = columnFiltersSetters.get(column);
+    if (!filterSetter) {
+      return;
+    }
+
+    filterSetter(filterText);
+  }
+
   return (
     <div className="term-members">
       <h2>Lista posłów {termId()} kadencji</h2>
-      <div>Kolumna: {orderBy}</div>
-      <div>Kierunek: {orderByDirection}</div>
+      <div>FullNameFilter: {fullNameFilter}</div>
+      <div>members.length: {members.length}</div>
       <NavLink to={`/terms/${termId()}`}>
         &lt;&lt; Wróć do szczegółów kadencji
       </NavLink>
       <table>
+        <colgroup>
+          <col />
+          <col style={{ width: '10%' }} />
+          <col style={{ width: '20%' }} />
+          <col style={{ width: '15%' }} />
+          <col style={{ width: '15%' }} />
+        </colgroup>
         <thead>
           <tr>
             <td>
@@ -164,6 +259,7 @@ export default function TermMembersComponent() {
                 columnDirection={fullNameOrder}
                 header="Nazwisko i imię"
                 columnOrderChangeRequest={columnOrderChangeRequested}
+                filterChanged={onFilterChanged}
               />
             </td>
             <td>
@@ -172,6 +268,7 @@ export default function TermMembersComponent() {
                 columnDirection={birthDateOrder}
                 header="Data urodzenia"
                 columnOrderChangeRequest={columnOrderChangeRequested}
+                filterChanged={onFilterChanged}
               />
             </td>
             <td>
@@ -180,6 +277,7 @@ export default function TermMembersComponent() {
                 columnDirection={clubOrder}
                 header="Klub"
                 columnOrderChangeRequest={columnOrderChangeRequested}
+                filterChanged={onFilterChanged}
               />
             </td>
             <td>
@@ -188,6 +286,7 @@ export default function TermMembersComponent() {
                 columnDirection={districtOrder}
                 header="Okręg"
                 columnOrderChangeRequest={columnOrderChangeRequested}
+                filterChanged={onFilterChanged}
               />
             </td>
             <td>
@@ -196,6 +295,7 @@ export default function TermMembersComponent() {
                 columnDirection={voivodeshipOrder}
                 header="Województwo"
                 columnOrderChangeRequest={columnOrderChangeRequested}
+                filterChanged={onFilterChanged}
               />
             </td>
           </tr>
@@ -206,7 +306,7 @@ export default function TermMembersComponent() {
           </tr>
         </tfoot>
         <tbody>
-          {members.map((member, i) => (
+          {displayMembers.map((member, i) => (
             <tr key={i}>
               <td>{member.fullName}</td>
               <td>{member.birthDate}</td>
