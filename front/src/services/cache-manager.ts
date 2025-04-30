@@ -94,7 +94,6 @@ export class CacheManager implements ICacheManager {
       while (cursor) {
         const currentEntry = cursor.value as CacheEntry<any>;
         if (currentEntry.expiry <= now) {
-          console.log('deleting', currentEntry);
           await cursor.delete();
         }
         cursor = await cursor.continue();

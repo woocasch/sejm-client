@@ -3,24 +3,17 @@ import './column-header.scss';
 
 import OrderingIconComponent, { OrderingDirection } from './ordering-icon';
 
-export enum OrderByColumn {
-  None,
-  FullName,
-  BirthDate,
-  Club,
-  District,
-  Voivodeship,
-}
-
-export interface Properties {
+export interface Properties<TColumns> {
   columnDirection: OrderingDirection;
-  column: OrderByColumn;
+  column: TColumns;
   header: string;
-  columnOrderChangeRequest: (column: OrderByColumn) => void;
-  filterChanged: (column: OrderByColumn, filterText: string) => void;
+  columnOrderChangeRequest: (column: TColumns) => void;
+  filterChanged: (column: TColumns, filterText: string) => void;
 }
 
-export default function ColumnHeaderComponent(props: Properties) {
+export default function ColumnHeaderComponent<TColumns>(
+  props: Properties<TColumns>,
+) {
   function onOrderChangeRequested(_mouseEvent: MouseEvent) {
     props.columnOrderChangeRequest(props.column);
   }

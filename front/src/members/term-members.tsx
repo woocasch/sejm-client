@@ -10,11 +10,20 @@ import './term-members.scss';
 import { NavLink, useParams } from 'react-router';
 import * as DS from '../services/data-service';
 import * as DSM from '../services/data-service.model';
-import OrderingIconComponent, { OrderingDirection } from './ordering-icon';
-import ColumnHeaderComponent, { OrderByColumn } from './column-header';
+import { OrderingDirection } from '../controls/list/ordering-icon';
+import ListComponent from '../controls/list/list';
 
 export interface RouteParameters {
   termId: string;
+}
+
+export enum OrderByColumn {
+  None,
+  FullName,
+  BirthDate,
+  Club,
+  District,
+  Voivodeship,
 }
 
 export default function TermMembersComponent() {
@@ -212,29 +221,6 @@ export default function TermMembersComponent() {
     fetch().catch(console.error);
   }, []);
 
-  function columnOrderChangeRequested(column: OrderByColumn) {
-    if (column == orderBy) {
-      const newDirection =
-        orderByDirection != OrderingDirection.Ascending
-          ? OrderingDirection.Ascending
-          : OrderingDirection.Descending;
-      setOrderByDirection(newDirection);
-      return;
-    }
-
-    setOrderBy(column);
-    setOrderByDirection(OrderingDirection.Ascending);
-  }
-
-  function onFilterChanged(column: OrderByColumn, filterText: string) {
-    const filterSetter = columnFiltersSetters.get(column);
-    if (!filterSetter) {
-      return;
-    }
-
-    filterSetter(filterText);
-  }
-
   return (
     <div className="term-members">
       <h2>Lista posłów {termId()} kadencji</h2>
@@ -243,82 +229,66 @@ export default function TermMembersComponent() {
       <NavLink to={`/terms/${termId()}`}>
         &lt;&lt; Wróć do szczegółów kadencji
       </NavLink>
-      <table>
-        <colgroup>
-          <col />
-          <col style={{ width: '10%' }} />
-          <col style={{ width: '20%' }} />
-          <col style={{ width: '15%' }} />
-          <col style={{ width: '15%' }} />
-        </colgroup>
-        <thead>
-          <tr>
-            <td>
-              <ColumnHeaderComponent
-                column={OrderByColumn.FullName}
-                columnDirection={fullNameOrder}
-                header="Nazwisko i imię"
-                columnOrderChangeRequest={columnOrderChangeRequested}
-                filterChanged={onFilterChanged}
-              />
-            </td>
-            <td>
-              <ColumnHeaderComponent
-                column={OrderByColumn.BirthDate}
-                columnDirection={birthDateOrder}
-                header="Data urodzenia"
-                columnOrderChangeRequest={columnOrderChangeRequested}
-                filterChanged={onFilterChanged}
-              />
-            </td>
-            <td>
-              <ColumnHeaderComponent
-                column={OrderByColumn.Club}
-                columnDirection={clubOrder}
-                header="Klub"
-                columnOrderChangeRequest={columnOrderChangeRequested}
-                filterChanged={onFilterChanged}
-              />
-            </td>
-            <td>
-              <ColumnHeaderComponent
-                column={OrderByColumn.District}
-                columnDirection={districtOrder}
-                header="Okręg"
-                columnOrderChangeRequest={columnOrderChangeRequested}
-                filterChanged={onFilterChanged}
-              />
-            </td>
-            <td>
-              <ColumnHeaderComponent
-                column={OrderByColumn.Voivodeship}
-                columnDirection={voivodeshipOrder}
-                header="Województwo"
-                columnOrderChangeRequest={columnOrderChangeRequested}
-                filterChanged={onFilterChanged}
-              />
-            </td>
-          </tr>
-        </thead>
-        <tfoot>
-          <tr>
-            <td colSpan={6}>&nbsp;</td>
-          </tr>
-        </tfoot>
-        <tbody>
-          {displayMembers.map((member, i) => (
-            <tr key={i}>
-              <td>{member.fullName}</td>
-              <td>{member.birthDate}</td>
-              <td>{member.club}</td>
-              <td>
-                {member.districtName} ({member.districtNumber})
-              </td>
-              <td>{member.voivodeship}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <ListComponent<DSM.ParliamentMember, OrderByColumn>
+        allItems={members}
+        columns={[
+          {
+            columnName: OrderByColumn.FullName,
+            header: 'Imię i nazwisko',
+            sortDirection: fullNameOrder,
+            valueFactory: (item) => item.fullName,
+            filterText: fullNameFilter,
+            setFilterText: (v) => setFullNameFilter(v),
+            sortingComparer: (a: string, b: string) => a.localeCompare(b),
+          },
+          {
+            columnName: OrderByColumn.BirthDate,
+            header: 'Data urodzenia',
+            sortDirection: birthDateOrder,
+            valueFactory: (item) => item.birthDate,
+            filterText: birthDateFilter,
+            setFilterText: (v) => setBirthDateFilter(v),
+            sortingComparer: (a: string, b: string) => a.localeCompare(b),
+            columnStyle: { width: '10%' },
+          },
+          {
+            columnName: OrderByColumn.Club,
+            header: 'Klub',
+            sortDirection: clubOrder,
+            valueFactory: (item) => item.club,
+            filterText: clubFilter,
+            setFilterText: (v) => setClubFilter(v),
+            sortingComparer: (a: string, b: string) => a.localeCompare(b),
+            columnStyle: { width: '20%' },
+          },
+          {
+            columnName: OrderByColumn.District,
+            header: 'Okręg',
+            sortDirection: districtOrder,
+            valueFactory: (item) =>
+              `${item.districtName} (${item.districtNumber})`,
+            filterText: districtFilter,
+            setFilterText: (v) => setDistrictFilter(v),
+            sortValueFactory: (item) => item.districtName,
+            sortingComparer: (a: string, b: string) => a.localeCompare(b),
+            columnStyle: { width: '15%' },
+          },
+          {
+            columnName: OrderByColumn.Voivodeship,
+            header: 'Województwo',
+            sortDirection: voivodeshipOrder,
+            valueFactory: (item) => item.voivodeship,
+            filterText: voivodeshipFilter,
+            setFilterText: (v) => setVoivodeshipFilter(v),
+            sortingComparer: (a: string, b: string) => a.localeCompare(b),
+            columnStyle: { width: '15%' },
+          },
+        ]}
+        orderBy={orderBy}
+        setOrderBy={(v: OrderByColumn) => setOrderBy(v)}
+        orderByDirection={orderByDirection}
+        setOrderByDirection={(v: OrderingDirection) => setOrderByDirection(v)}
+      />
     </div>
   );
 }

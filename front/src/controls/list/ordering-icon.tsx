@@ -1,7 +1,7 @@
 import React, { useMemo, MouseEvent } from 'react';
-import iconNeutral from '../assets/icons/members/ordering-none.svg';
-import iconAscending from '../assets/icons/members/ordering-asc.svg';
-import iconDescending from '../assets/icons/members/ordering-desc.svg';
+import iconNeutral from '../../assets/icons/controls/list/ordering-none.svg';
+import iconAscending from '../../assets/icons/controls/list/ordering-asc.svg';
+import iconDescending from '../../assets/icons/controls/list/ordering-desc.svg';
 
 export enum OrderingDirection {
   None = 0,
